@@ -15,7 +15,9 @@
     "demo:dev": "vite",
     "demo:build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "build": "rimraf ./dist && node scripts/rollup.config.js"
+    "build": "rimraf ./dist && node scripts/rollup.config.js",
+    "release": "release-it",
+    "commit": "git-cz"
   },
   "dependencies": {},
   "devDependencies": {
@@ -27,6 +29,7 @@
     "esno": "^0.16.3",
     "less": "^4.1.3",
     "less-loader": "^11.1.0",
+    "release-it": "14.0",
     "rimraf": "^4.4.0",
     "rollup": "^3.19.1",
     "rollup-plugin-uglify": "^6.0.4",
@@ -37,5 +40,17 @@
     "vite": "^4.1.0",
     "vue": "^3.2.45",
     "vue-tsc": "^1.0.24"
+  },
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "commit": true,
+    "tag": true,
+    "push": true
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": false
   }
 }

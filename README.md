@@ -4,8 +4,15 @@
 - waterfall like pinterest
 
 # Demo
-
+[Demo](https://dajiaman.github.io/vue-waterfall-virtuallist/index.html)
 <br/>
+
+# Start 
+```
+yarn add vue-waterfall-virtual-list
+// or npm 
+npm install --save vue-waterfall-virtual-list
+```
 
 # usage
 
@@ -58,9 +65,25 @@ const props = defineProps(["item"]);
   </div>
 </template>
 
-```
-
-<br/>
+``` vue
+// you can listen tobottom event and create footer slot
+<template>
+ <div>
+    <waterfallVirtialList
+      :data-key="'key'"
+      :columnWidth="260"
+      :data-source="list"
+      :data-component="itemComponent"
+      :width-key="'width'"
+      :height-key="'height'"
+      :columnGap="16"
+      :rowGap="16"
+      :tobottom="onReachBottom"
+    >
+      <template #footer>loading...</template>
+    </waterfallVirtialList>
+ </div>
+</template>
 
 # Prop type
 
