@@ -1,7 +1,7 @@
-# 瀑布流虚拟列表
+# vue-waterfall-virtual-list
 
 - support for vue3
-- waterfall  like pinterest 
+- waterfall like pinterest
 
 # Demo
 
@@ -9,11 +9,11 @@
 
 # usage
 
-root component: 
+root component:
 
 ```
-width-key<template>
- <div> 
+<template>
+ <div>
     <waterfallVirtialList
       :data-key="'key'"
       :columnWidth="260"
@@ -66,21 +66,21 @@ const props = defineProps(["item"]);
 
 ## Required props
 
-|Prop|Type|Description|
-|--|--|--|
-|data-key                                |String\|Funcntion                                  |唯一key|
-|data-source|Array|数组|
-|data-component|Component|子组件|
-|column-width|Number|每列的宽度|
-|width-key|String|数据中宽度的键值|
-|height-key	|String| 数据中高度的键值|
+| Prop           | Type              | Description      |
+| -------------- | ----------------- | ---------------- |
+| data-key       | String\|Funcntion | 唯一 key         |
+| data-source    | Array             | 数组             |
+| data-component | Component         | 子组件           |
+| column-width   | Number            | 每列的宽度       |
+| width-key      | String            | 数据中宽度的键值 |
+| height-key     | String            | 数据中高度的键值 |
 
 ## Optional props
 
-|Prop|Type|Description|
-|--|--|--|
-|rowGap|Number|行间隔|
-|columnGap|Number|列间隔|
+| Prop      | Type   | Description |
+| --------- | ------ | ----------- |
+| rowGap    | Number | 行间隔      |
+| columnGap | Number | 列间隔      |
 
 注意间隔是内边距实现的
 

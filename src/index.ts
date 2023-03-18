@@ -5,17 +5,13 @@ import {
   onDeactivated,
   onMounted,
   onUnmounted,
-  reactive,
   Ref,
   ref,
-  RendererElement,
-  RendererNode,
-  toRaw,
-  VNode,
   watch,
+  renderSlot,
 } from "vue";
-import Item from "./item";
-import { getIntersection, getMax, getMin } from "./util";
+import { Item } from "./item";
+import { getMax, getMin } from "./util";
 
 export default defineComponent({
   name: "waterfallVirtualList",
@@ -25,11 +21,19 @@ export default defineComponent({
       required: true,
       default: [],
     },
+    /**
+     * 列间距
+     */
     columnGap: {
-      type: [Number],
+      type: Number,
+      default: 16,
     },
+    /**
+     * 行间距
+     */
     rowGap: {
-      type: [Number],
+      type: Number,
+      default: 16,
     },
     /**
      * 数据源
@@ -103,22 +107,48 @@ export default defineComponent({
     itemStyle: {
       type: Object,
     },
-    topThrottle: {
+    /**
+     * 上阈值
+     * 避免滚动的时候渲染白屏
+     */
+    upThreshold: {
       type: Number,
       default: 200,
     },
-    bottomThrottle: {
+    /**
+     * 下阈值
+     */
+    downThreshold: {
       type: Number,
       default: 200,
+    },
+    /**
+     * toBottom阈值
+     */
+    bottomThreshold: {
+      type: Number,
+      default: 0,
+    },
+    footerTag: {
+      type: String,
+      default: "div",
+    },
+    footerClass: {
+      type: String,
+      default: "footer",
+    },
+    footerStyle: {
+      type: Object,
     },
   },
-  setup(props) {
+  setup(props, { slots, emit }) {
     let containerWidth = 0;
     let columnCount = ref(0);
     let columnHeightArr: number[] = [];
     let itemList: any[] = [];
     let range: Ref<number[]> = ref([]);
     let domRef = ref(null);
+
     const { columnWidth, dataSource } = props;
 
     watch(
@@ -162,12 +192,12 @@ export default defineComponent({
       }
 
       const dom = domRef.value as unknown as HTMLElement;
-      const { bottomThrottle, topThrottle } = props;
+      const { downThreshold, upThreshold } = props;
 
       // 在值内
-      const top = Math.floor(window.scrollY - dom.offsetTop - topThrottle);
+      const top = Math.floor(window.scrollY - dom.offsetTop - upThreshold);
       const bottom = Math.floor(
-        window.scrollY + window.innerHeight - dom.offsetTop + bottomThrottle
+        window.scrollY + window.innerHeight - dom.offsetTop + downThreshold
       );
 
       const indexs: number[] = [];
@@ -182,12 +212,26 @@ export default defineComponent({
 
     const onScroll = (event: Event) => {
       getVisibleRange();
+
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight =
+        document.documentElement.clientHeight || document.body.clientHeight;
+      const scrollHeight =
+        document.documentElement.scrollHeight || document.body.scrollHeight;
+
+      const { bottomThreshold } = props;
+
+      if (scrollTop + clientHeight + 1 + bottomThreshold >= scrollHeight) {
+        emit("tobottom");
+      }
     };
 
     const onResize = (event: Event) => {
       calColumnNum();
+      getVisibleRange();
     };
 
+    // cal item position
     function calPosition() {
       if (!dataSource || dataSource.length === 0) {
         return;
@@ -195,7 +239,7 @@ export default defineComponent({
 
       itemList = [];
 
-      const { widthKey, heightKey } = props;
+      const { widthKey, heightKey, columnGap, rowGap } = props;
 
       for (let i = 0; i < dataSource.length; i++) {
         const item = dataSource[i] as unknown as any;
@@ -204,7 +248,7 @@ export default defineComponent({
           (item[heightKey] as unknown as number) /
           (item[widthKey] as unknown as number);
 
-        const height = Math.floor(ratio * columnWidth);
+        const height = Math.floor(ratio * (columnWidth - columnGap)) + rowGap;
 
         const min: number = getMin(columnHeightArr);
         const index = columnHeightArr.indexOf(min);
@@ -316,21 +360,45 @@ export default defineComponent({
 
     return () => {
       const height = getMax(columnHeightArr);
-      const { rootTag } = props;
-      console.log("render");
-      return h(
+      const {
         rootTag,
-        {
-          ref: domRef,
-          id: "pin-list",
-          role: "list",
-          style: {
-            height: `${height}px`,
-            width: `${columnWidth * columnCount.value}px`,
+        wrapTag,
+        wrapClass,
+        wrapStyle,
+        footerTag,
+        footerClass,
+        footerStyle,
+      } = props;
+
+      return h(rootTag, {}, [
+        h(
+          wrapTag,
+          {
+            ref: domRef,
+            style: {
+              position: "relative",
+              width: `${columnWidth * columnCount.value}px`,
+              height: `${height}px`,
+              ...wrapStyle,
+            },
+            class: wrapClass,
+            role: "list",
           },
-        },
-        getRenderSlots()
-      );
+          getRenderSlots()
+        ),
+
+        // footer slot
+        slots.footer
+          ? h(
+              footerTag,
+              {
+                class: footerClass,
+                style: footerStyle,
+              },
+              [renderSlot(slots, "footer")]
+            )
+          : null,
+      ]);
     };
   },
 });

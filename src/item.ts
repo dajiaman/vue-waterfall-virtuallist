@@ -34,7 +34,7 @@ const itemProps = {
   },
 };
 
-export default defineComponent({
+export const Item = defineComponent({
   name: "waterfallVirtualListItem",
   props: itemProps,
   data() {
@@ -73,6 +73,7 @@ export default defineComponent({
                   paddingLeft: `${columnGap ? columnGap / 2 : 0}px`,
                   paddingRight: `${columnGap ? columnGap / 2 : 0}px`,
                   paddingBottom: `${rowGap}px`,
+                  boxSizing: "border-box",
                 },
               }),
         ]
@@ -80,3 +81,4 @@ export default defineComponent({
     };
   },
 });
+
