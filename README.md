@@ -4,13 +4,15 @@
 - waterfall like pinterest
 
 # Demo
+
 [Demo](https://dajiaman.github.io/vue-waterfall-virtuallist/index.html)
 <br/>
 
-# Start 
+# Start
+
 ```
 yarn add vue-waterfall-virtual-list
-// or npm 
+// or npm
 npm install --save vue-waterfall-virtual-list
 ```
 
@@ -49,8 +51,7 @@ root component:
 
 item component
 
-```
-
+``` vue
 <script lang="ts" setup>
 const props = defineProps(["item"]);
 </script>
@@ -64,6 +65,9 @@ const props = defineProps(["item"]);
     />
   </div>
 </template>
+```
+
+with slot
 
 ``` vue
 // you can listen tobottom event and create footer slot
@@ -84,6 +88,7 @@ const props = defineProps(["item"]);
     </waterfallVirtialList>
  </div>
 </template>
+````
 
 # Prop type
 
