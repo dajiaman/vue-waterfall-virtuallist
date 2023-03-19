@@ -11,6 +11,13 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "vue",
+    "waterfall",
+    "virtuallist",
+    "vue-waterfall-virtuallist",
+    "vue-waterall"
+  ],
   "scripts": {
     "demo:dev": "vite",
     "demo:build": "vue-tsc && vite build",
