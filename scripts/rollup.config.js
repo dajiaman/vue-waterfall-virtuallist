@@ -11,9 +11,8 @@ const version = require('../package.json').version
 
 const banner
     = '/*!\n'
-    + ` * Vue3-Lazyload.js v${version}\n`
-    + ' * A Vue3.x image lazyload plugin' + '\n'
-    + ` * (c) ${new Date().getFullYear()} MuRong <admin@imuboy.cn>\n`
+    + ` * Vue-waterfall-virtualList.js v${version}\n`
+    + ` * (c) ${new Date().getFullYear()} Dajiaman <dajiaman@live.com>\n`
     + ' * Released under the MIT License.\n'
     + ' */\n'
 
@@ -33,7 +32,7 @@ async function build(options, outputOptions) {
         const bundle = await rollup.rollup(options)
         const { output } = await bundle.generate({
             format: outputOptions.format,
-            name: 'VueLazyload',
+            name: 'Vue-waterfall-virtualList',
         })
         exists()
         await write(path.resolve(__dirname, outputOptions.filename), output[0].code)

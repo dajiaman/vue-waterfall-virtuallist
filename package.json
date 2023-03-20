@@ -1,13 +1,31 @@
 {
   "name": "vue-waterall-virtuallist",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "waterfall virtuallist plugin",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dajiaman/vue-waterfall-virtuallist.git"
   },
-  "main": "dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "unpkg": "dist/index.min.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./dist/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist"
   ],
@@ -19,10 +37,13 @@
     "vue-waterall"
   ],
   "scripts": {
+    "build": "rimraf ./dist && npm run rollup:build",
+    "rollup:build": "node scripts/rollup.config.js",
+    "start": "esno src/index.ts",
+    "dev": "unbuild --stub",
     "demo:dev": "vite",
     "demo:build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "build": "rimraf ./dist && node scripts/rollup.config.js",
     "release": "release-it",
     "commit": "git-cz"
   },

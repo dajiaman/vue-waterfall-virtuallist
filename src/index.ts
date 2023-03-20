@@ -5,11 +5,11 @@ import {
   onDeactivated,
   onMounted,
   onUnmounted,
-  Ref,
   ref,
   watch,
   renderSlot,
 } from "vue";
+import type { Ref } from "vue";
 import { Item } from "./item";
 import { getMax, getMin } from "./util";
 
