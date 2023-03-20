@@ -77,5 +77,5 @@ build({
     external,
 }, {
     format: 'umd',
-    filename: '../dist/index.js',
+    filename: '../dist/index.min.js',
 })

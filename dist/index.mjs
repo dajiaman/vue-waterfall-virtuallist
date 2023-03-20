@@ -1,46 +1,117 @@
-import {
-  defineComponent,
-  h,
-  onActivated,
-  onDeactivated,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-  renderSlot,
-} from "vue";
-import type { Ref } from "vue";
-import { Item } from "./item";
-import { getMax, getMin } from "./util";
+import { defineComponent, ref, h, watch, onMounted, onUnmounted, onActivated, onDeactivated, renderSlot } from 'vue';
 
-export default defineComponent({
+const itemProps = {
+  index: {
+    type: [Number, String]
+  },
+  uniqueKey: {
+    type: String
+  },
+  tag: {
+    type: String,
+    required: true
+  },
+  source: {
+    type: Object
+  },
+  component: {
+    type: [Object, Function]
+  },
+  slotComponent: {
+    type: Function
+  },
+  extraProps: {
+    type: Object
+  },
+  scopedSlots: {
+    type: Object
+  },
+  columnGap: {
+    type: Number
+  },
+  rowGap: {
+    type: Number
+  }
+};
+const Item = defineComponent({
+  name: "waterfallVirtualListItem",
+  props: itemProps,
+  data() {
+    return {
+      resizeObserver: void 0
+    };
+  },
+  setup(props) {
+    const elRef = ref(null);
+    return () => {
+      const {
+        tag,
+        scopedSlots,
+        component,
+        source,
+        slotComponent,
+        index,
+        columnGap,
+        rowGap,
+        uniqueKey
+      } = props;
+      return h(
+        tag ? tag : "div",
+        { key: uniqueKey, "data-key": uniqueKey, ref: elRef, role: "listitem" },
+        [
+          slotComponent ? h(
+            "div",
+            slotComponent({ item: source, index, scope: props })
+          ) : h(component, {
+            item: source,
+            style: {
+              paddingLeft: `${columnGap ? columnGap / 2 : 0}px`,
+              paddingRight: `${columnGap ? columnGap / 2 : 0}px`,
+              paddingBottom: `${rowGap}px`,
+              boxSizing: "border-box"
+            }
+          })
+        ]
+      );
+    };
+  }
+});
+
+const getMin = (arr) => {
+  return Math.min.apply(null, arr);
+};
+const getMax = (arr) => {
+  return Math.max.apply(null, arr);
+};
+
+const index = defineComponent({
   name: "waterfallVirtualList",
   props: {
     dataKey: {
       type: [String, Function],
       required: true,
-      default: [],
+      default: []
     },
     /**
      * 列间距
      */
     columnGap: {
       type: Number,
-      default: 16,
+      default: 16
     },
     /**
      * 行间距
      */
     rowGap: {
       type: Number,
-      default: 16,
+      default: 16
     },
     /**
      * 数据源
      */
     dataSource: {
       type: Array,
-      required: true,
+      required: true
     },
     /**
      * 数据源中width对应的key
@@ -49,7 +120,7 @@ export default defineComponent({
     widthKey: {
       type: String,
       default: "width",
-      required: true,
+      required: true
     },
     /**
      * 数据源中height对应的key
@@ -57,55 +128,55 @@ export default defineComponent({
     heightKey: {
       type: String,
       default: "height",
-      required: true,
+      required: true
     },
     /**
      * 列宽度
      */
     columnWidth: {
       type: Number,
-      required: true,
+      required: true
     },
     /**
      * 子组件
      */
     dataComponent: {
-      type: [Object, Function],
+      type: [Object, Function]
     },
     /**
      * 组件标签名
      */
     rootTag: {
       type: String,
-      default: "div",
+      default: "div"
     },
     wrapTag: {
       type: String,
-      default: "div",
+      default: "div"
     },
     wrapClass: {
       type: String,
-      default: "",
+      default: ""
     },
     wrapStyle: {
-      type: Object,
+      type: Object
     },
     /**
      * 子项标签名
      */
     itemTag: {
       type: String,
-      default: "div",
+      default: "div"
     },
     itemClass: {
       type: String,
-      default: "",
+      default: ""
     },
     itemClassAdd: {
-      type: Function,
+      type: Function
     },
     itemStyle: {
-      type: Object,
+      type: Object
     },
     /**
      * 上阈值
@@ -113,75 +184,65 @@ export default defineComponent({
      */
     upThreshold: {
       type: Number,
-      default: 200,
+      default: 200
     },
     /**
      * 下阈值
      */
     downThreshold: {
       type: Number,
-      default: 200,
+      default: 200
     },
     /**
      * toBottom阈值
      */
     bottomThreshold: {
       type: Number,
-      default: 0,
+      default: 0
     },
     footerTag: {
       type: String,
-      default: "div",
+      default: "div"
     },
     footerClass: {
       type: String,
-      default: "footer",
+      default: "footer"
     },
     footerStyle: {
-      type: Object,
-    },
+      type: Object
+    }
   },
   setup(props, { slots, emit }) {
     let containerWidth = 0;
     let columnCount = ref(0);
-    let columnHeightArr: number[] = [];
-    let itemList: any[] = [];
-    let range: Ref<number[]> = ref([]);
+    let columnHeightArr = [];
+    let itemList = [];
+    let range = ref([]);
     let domRef = ref(null);
-
     const { columnWidth, dataSource } = props;
-
     watch(
       () => dataSource.length,
       () => {
         init();
-        // // trigger render
         getVisibleRange();
       }
     );
-
-    // 计算有几列
     function calColumnNum() {
       if (!dataSource || dataSource.length === 0) {
         return;
       }
-
       const windowWidth = document.documentElement.clientWidth;
       containerWidth = windowWidth;
       const newValue = parseInt(containerWidth / columnWidth + "");
-
       if (columnCount.value !== newValue) {
         columnCount.value = newValue;
-        // need to calculate and relayout
         init();
       }
-
       columnHeightArr = [];
       for (let i = 0; i < columnCount.value; i++) {
         columnHeightArr.push(0);
       }
     }
-
     function getVisibleRange() {
       if (!domRef || !domRef.value) {
         range.value = Array.from({ length: 20 }, (_, index) => {
@@ -189,119 +250,85 @@ export default defineComponent({
         });
         return;
       }
-
-      const dom = domRef.value as unknown as HTMLElement;
+      const dom = domRef.value;
       const { downThreshold, upThreshold } = props;
-
-      // 在值内
       const top = Math.floor(window.scrollY - dom.offsetTop - upThreshold);
       const bottom = Math.floor(
         window.scrollY + window.innerHeight - dom.offsetTop + downThreshold
       );
-
-      const indexs: number[] = [];
+      const indexs = [];
       itemList.map((item, index) => {
         if (!(item["top"] >= bottom) && !(item["bottom"] <= top)) {
           indexs.push(index);
         }
       });
-
       range.value = indexs;
     }
-
-    const onScroll = (event: Event) => {
+    const onScroll = (event) => {
       getVisibleRange();
-
       const scrollTop = document.documentElement.scrollTop;
-      const clientHeight =
-        document.documentElement.clientHeight || document.body.clientHeight;
-      const scrollHeight =
-        document.documentElement.scrollHeight || document.body.scrollHeight;
-
+      const clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
       const { bottomThreshold } = props;
-
       if (scrollTop + clientHeight + 1 + bottomThreshold >= scrollHeight) {
         emit("tobottom");
       }
     };
-
-    const onResize = (event: Event) => {
+    const onResize = (event) => {
       calColumnNum();
       getVisibleRange();
     };
-
-    // cal item position
     function calPosition() {
       if (!dataSource || dataSource.length === 0) {
         return;
       }
-
       itemList = [];
-
       const { widthKey, heightKey, columnGap, rowGap } = props;
-
       for (let i = 0; i < dataSource.length; i++) {
-        const item = dataSource[i] as unknown as any;
-        const width = columnWidth;
-        const ratio =
-          (item[heightKey] as unknown as number) /
-          (item[widthKey] as unknown as number);
-
+        const item = dataSource[i];
+        const ratio = item[heightKey] / item[widthKey];
         const height = Math.floor(ratio * (columnWidth - columnGap)) + rowGap;
-
-        const min: number = getMin(columnHeightArr);
+        const min = getMin(columnHeightArr);
         const index = columnHeightArr.indexOf(min);
-
         columnHeightArr[index] += height;
         itemList[i] = {
-          height: height,
+          height,
           colIndex: index,
           top: columnHeightArr[index] - height,
-          bottom: columnHeightArr[index],
+          bottom: columnHeightArr[index]
         };
       }
     }
-
-    // 初始化工作
     function init() {
       calColumnNum();
       calPosition();
     }
-
-    // start
     init();
-
     onMounted(() => {
       document.addEventListener("scroll", onScroll, {
-        passive: false,
+        passive: false
       });
       window.addEventListener("resize", onResize, {
-        passive: false,
+        passive: false
       });
-
       getVisibleRange();
     });
-
     onUnmounted(() => {
       document.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     });
-
     onActivated(() => {
       document.addEventListener("scroll", onScroll, {
-        passive: false,
+        passive: false
       });
       window.addEventListener("resize", onResize, {
-        passive: false,
+        passive: false
       });
     });
-
     onDeactivated(() => {
       document.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     });
-
-    // item slot render
     function getRenderSlots() {
       const {
         dataComponent,
@@ -310,27 +337,24 @@ export default defineComponent({
         columnGap,
         rowGap,
         itemClass,
-        itemClassAdd,
+        itemClassAdd
       } = props;
-      const slots = [];
+      const slots2 = [];
       const ranges = range.value;
       for (let i = 0; i < ranges.length; i++) {
         const index = ranges[i];
-
-        const source = dataSource[index] as any;
+        const source = dataSource[index];
         const item = itemList[index];
-        const uniqueKey =
-          typeof dataKey === "function" ? dataKey(source) : source[dataKey];
-
+        const uniqueKey = typeof dataKey === "function" ? dataKey(source) : source[dataKey];
         if (typeof uniqueKey === "string" || typeof uniqueKey === "number") {
-          slots.push(
-            h(Item as unknown as string, {
-              index: index,
-              uniqueKey: uniqueKey,
+          slots2.push(
+            h(Item, {
+              index,
+              uniqueKey,
               component: dataComponent,
-              columnGap: columnGap,
-              rowGap: rowGap,
-              source: source,
+              columnGap,
+              rowGap,
+              source,
               tag: itemTag,
               style: {
                 position: "absolute",
@@ -338,13 +362,9 @@ export default defineComponent({
                 top: "0px",
                 width: `${columnWidth}px`,
                 height: `${item["height"]}px`,
-                transform: `translateX(${
-                  columnWidth * item["colIndex"]
-                }px) translateY(${item["bottom"] - item["height"]}px)`,
+                transform: `translateX(${columnWidth * item["colIndex"]}px) translateY(${item["bottom"] - item["height"]}px)`
               },
-              class: `${itemClass}${
-                itemClassAdd ? " " + itemClassAdd(index) : ""
-              }`,
+              class: `${itemClass}${itemClassAdd ? " " + itemClassAdd(index) : ""}`
             })
           );
         } else {
@@ -353,10 +373,8 @@ export default defineComponent({
           );
         }
       }
-
-      return slots;
+      return slots2;
     }
-
     return () => {
       const height = getMax(columnHeightArr);
       const {
@@ -366,9 +384,8 @@ export default defineComponent({
         wrapStyle,
         footerTag,
         footerClass,
-        footerStyle,
+        footerStyle
       } = props;
-
       return h(rootTag, {}, [
         h(
           wrapTag,
@@ -378,26 +395,25 @@ export default defineComponent({
               position: "relative",
               width: `${columnWidth * columnCount.value}px`,
               height: `${height}px`,
-              ...wrapStyle,
+              ...wrapStyle
             },
             class: wrapClass,
-            role: "list",
+            role: "list"
           },
           getRenderSlots()
         ),
-
         // footer slot
-        slots.footer
-          ? h(
-              footerTag,
-              {
-                class: footerClass,
-                style: footerStyle,
-              },
-              [renderSlot(slots, "footer")]
-            )
-          : null,
+        slots.footer ? h(
+          footerTag,
+          {
+            class: footerClass,
+            style: footerStyle
+          },
+          [renderSlot(slots, "footer")]
+        ) : null
       ]);
     };
-  },
+  }
 });
+
+export { index as default };

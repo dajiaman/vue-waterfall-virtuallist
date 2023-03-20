@@ -37,7 +37,7 @@
     "vue-waterall"
   ],
   "scripts": {
-    "build": "rimraf ./dist && npm run rollup:build",
+    "build": "rimraf ./dist && unbuild && npm run rollup:build",
     "rollup:build": "node scripts/rollup.config.js",
     "start": "esno src/index.ts",
     "dev": "unbuild --stub",

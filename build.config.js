@@ -6,6 +6,9 @@ export default defineBuildConfig({
   ],
   declaration: true,
   clean: true,
+  externals: [
+    'vue'
+  ],
   rollup: {
     emitCJS: true,
   },
